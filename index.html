@@ -1635,6 +1635,28 @@ function updateBuildingVisibility() {
   });
 }
 
+// --- JOYSTICK VISIBILITY LOGIC ---
+function updateJoystickVisibility() {
+  const is3D = document.getElementById('btn-3d').classList.contains('active');
+  const suggActive = suggBox.classList.contains('active');
+  const joyZone = document.getElementById('joystick-zone');
+  
+  if (joyZone) {
+    // Only show joystick if in 3D mode AND the search suggestions are closed
+    if (is3D && !suggActive) {
+      joyZone.style.display = 'block';
+    } else {
+      joyZone.style.display = 'none';
+    }
+  }
+}
+
+// Automatically watch the suggestions box. Whenever it opens or closes, update the joystick!
+const suggObserver = new MutationObserver(() => {
+  updateJoystickVisibility();
+});
+suggObserver.observe(suggBox, { attributes: true, attributeFilter: ['class'] });
+
 function setMode(mode) {
   const btn2d = document.getElementById('btn-2d');
   const btn3d = document.getElementById('btn-3d');
@@ -1645,15 +1667,16 @@ function setMode(mode) {
     activeCamera = camera2D;
     controls2D.enabled = true;
     controls3D.enabled = false;
-    document.getElementById('joystick-zone').style.display = 'none';
   } else {
     btn3d.classList.add('active');
     btn2d.classList.remove('active');
     activeCamera = camera3D;
     controls3D.enabled = true;
     controls2D.enabled = false;
-    document.getElementById('joystick-zone').style.display = 'block';
   }
+  
+  // Use our new smart visibility checker
+  updateJoystickVisibility();
   
   if (typeof updateBuildingVisibility === 'function') updateBuildingVisibility();
 }
