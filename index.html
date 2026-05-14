@@ -102,11 +102,11 @@
   .fab-top { top: 86px; }
   
   .fab-bottom { 
-    bottom: 180px; 
+    bottom: 152px; 
     transition: bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); 
   }
-  .fab-bottom.sheet-open { bottom: 380px; }
-  .fab-bottom.sheet-collapsed { bottom: 290px; }
+  .fab-bottom.sheet-open { bottom: 370px; } /* Set to your requested 370px */
+  .fab-bottom.sheet-collapsed { bottom: 260px; }
   
   .fab { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: var(--text-main); }
   .fab svg { width: 20px; height: 20px; fill: currentColor; }
@@ -118,14 +118,14 @@
 
 /* Virtual Joystick */
   #joystick-zone {
-    display: none; position: absolute; bottom: 180px; left: 16px; 
-    width: 80px; height: 80px; /* Reduced from 96px */
+    display: none; position: absolute; bottom: 152px; left: 16px; 
+    width: 80px; height: 80px; 
     background: rgba(28, 30, 38, 0.4); border: 1.5px solid var(--glass-border); 
     border-radius: 50%; z-index: 100; touch-action: none; backdrop-filter: blur(8px);
     transition: bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); 
   }
-  #joystick-zone.sheet-open { bottom: 380px; }
-  #joystick-zone.sheet-collapsed { bottom: 290px; }
+  #joystick-zone.sheet-open { bottom: 370px; } /* Set to your requested 370px */
+  #joystick-zone.sheet-collapsed { bottom: 260px; }
 
   #joystick-knob {
     position: absolute; top: 24px; left: 24px; /* Recalculated to center the smaller knob */
@@ -150,7 +150,7 @@
     position: absolute; bottom: -150%; left: 16px; right: 16px; max-width: 400px; margin: 0 auto;
     border-radius: 24px; padding: 20px; z-index: 95; transition: bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
-  #bottom-sheet.open { bottom: 175px; } 
+  #bottom-sheet.open { bottom: 152px; }
 
   /* Category Slider Styles */
   #slider-wrapper {
@@ -283,7 +283,7 @@
 
   /* 3. Bottom View Toggle */
   #view-toggle-wrapper {
-    position: absolute; bottom: 100px; left: 16px; right: 16px; display: flex; justify-content: center; z-index: 90;
+    position: absolute; bottom: 76px; left: 16px; right: 16px; display: flex; justify-content: center; z-index: 90;
   }
   #view-toggle { display: flex; border-radius: 36px; padding: 4px; width: 100%; max-width: 340px; height: 64px; }
   .toggle-btn {
@@ -296,56 +296,38 @@
 
 /* Styled Footer Bar */
   #footer-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    position: fixed; bottom: 0; left: 0; right: 0;
     background: rgba(18, 19, 24, 0.85); 
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border-top: 1px solid var(--glass-border);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 12px 24px 8px 24px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 8px 16px 6px 16px; /* Reduced padding */
     z-index: 100000;
   }
   
   .footer-logo-row {
-    width: 100%;
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-    margin-bottom: 8px; /* Space between the big logos and the bottom text */
+    width: 100%; display: flex; justify-content: space-evenly; align-items: center;
+    margin-bottom: 4px; /* Tighter gap above text */
   }
   
   .footer-logo {
-    height: 48px; /* Increased significantly for better visibility */
-    width: auto;
-    object-fit: contain;
-    pointer-events: auto; 
+    height: 32px; /* Shrunken logos */
+    width: auto; object-fit: contain; pointer-events: auto; 
     filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5));
     transition: opacity 0.2s, transform 0.2s;
   }
   
-  .footer-logo:active {
-    opacity: 0.7;
-    transform: scale(0.95);
-  }
+  .footer-logo:active { opacity: 0.7; transform: scale(0.95); }
 
   .footer-text {
     text-align: center;
-    font-size: 10px;
+    font-size: 10px; /* Smaller text */
     color: rgba(255, 255, 255, 0.4); 
-    pointer-events: none;
-    letter-spacing: 0.3px;
-    white-space: nowrap; /* Forces the text to stay on one single line */
+    pointer-events: none; letter-spacing: 0.3px; white-space: nowrap; 
   }
 
   .footer-text span {
-    color: rgba(255, 255, 255, 0.7); 
-    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7); font-weight: 600;
   }
 
 /* --- Loading Screen Styles --- */
