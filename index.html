@@ -1284,23 +1284,31 @@ function applyGhostingAndHighlight(selectedMeshes) {
 }
 
 function createSearchMarker(text, x, bottomY, topY, z) {
-  const ACCENT_COLOR = '#8ab4f8';     
-  const GLASS_BG = 'rgba(28, 30, 38, 0.65)'; 
-  const BORDER_COLOR = 'rgba(255, 255, 255, 0.15)'; 
-  const TEXT_SIZE = 50;               
+  // --- TEXT BOX CONTROLS ---
+  const GLASS_BG = 'rgba(255, 255, 255, 0.85)'; 
+  const BORDER_COLOR = 'rgba(18, 19, 24, 0.85)'; 
+  const TEXT_COLOR = '#121318'; 
+  const TEXT_BOX_BORDER_WIDTH = 4; 
+  
+  // ---> NEW PREMIUM SOLID PIN CONTROLS <---
+  const PIN_BORDER = '#ffffff'; // Exact toggle button blue
+  const PIN_BORDER_WIDTH = 3;   // Thick, bold accent edge
+  const DOT_COLOR = '#ffffff';  // Crisp white inner dot
+  
+  const TEXT_SIZE = 48;               
   const SPRITE_SCALE = 0.006; 
 
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  ctx.font = `600 ${TEXT_SIZE}px "Inter", sans-serif`; 
+  ctx.font = `900 ${TEXT_SIZE}px "Inter", sans-serif`; 
   const metrics = ctx.measureText(text);
   
-  const textWidth = metrics.width + 60;
-  canvas.width = Math.max(180, textWidth); 
+  const boxWidth = metrics.width + 60; 
+  canvas.width = Math.max(200, boxWidth + 40); 
   canvas.height = 230; 
   
   const ctx2 = canvas.getContext('2d');
-  ctx2.font = `600 ${TEXT_SIZE}px "Inter", sans-serif`;
+  ctx2.font = `900 ${TEXT_SIZE}px "Inter", sans-serif`;
   ctx2.textAlign = 'center';
   ctx2.textBaseline = 'middle';
   
@@ -1308,41 +1316,59 @@ function createSearchMarker(text, x, bottomY, topY, z) {
   const pillHeight = 80;
   const pillY = 20;
   
+  // 1. Draw Text Box
   ctx2.shadowColor = 'rgba(0, 0, 0, 0.4)';
-  ctx2.shadowBlur = 12; 
-  ctx2.shadowOffsetY = 4;
+  ctx2.shadowBlur = 15; 
+  ctx2.shadowOffsetY = 6;
   
   ctx2.fillStyle = GLASS_BG; 
   ctx2.strokeStyle = BORDER_COLOR;
-  ctx2.lineWidth = 2; 
+  ctx2.lineWidth = TEXT_BOX_BORDER_WIDTH; 
   
   ctx2.beginPath();
-  ctx2.roundRect(centerX - textWidth/2, pillY, textWidth, pillHeight, pillHeight/2);
+  ctx2.roundRect(centerX - boxWidth/2, pillY, boxWidth, pillHeight, pillHeight/2);
   ctx2.fill();
   ctx2.stroke();
   
   ctx2.shadowBlur = 0; 
   ctx2.shadowOffsetY = 0;
-  ctx2.fillStyle = '#e8eaed'; 
+  ctx2.fillStyle = TEXT_COLOR; 
   ctx2.fillText(text, centerX, pillY + pillHeight/2 + 3);
 
   const pinGap = 60; 
   const pinY = pillY + pillHeight + pinGap; 
   
-  ctx2.fillStyle = 'rgba(138, 180, 248, 0.15)'; 
-  ctx2.strokeStyle = ACCENT_COLOR;
-  ctx2.lineWidth = 3; 
+  // 2. Create the Dark "Matte Texture" Gradient for the Pin
+  // This simulates the sleek dark theme of your UI panels
+  const pinGradient = ctx2.createLinearGradient(centerX - 20, pinY - 45, centerX + 20, pinY + 15);
+  pinGradient.addColorStop(0, '#2a2d39'); // Lighter dark at the top
+  pinGradient.addColorStop(1, '#121318'); // Deep background color at the bottom
   
+  // 3. Draw the Solid, Themed Pin
+  ctx2.shadowColor = 'rgba(0, 0, 0, 0.7)';
+  ctx2.shadowBlur = 12; 
+  ctx2.shadowOffsetY = 6;
+
   ctx2.beginPath();
-  ctx2.arc(centerX, pinY - 25, 18, Math.PI * 0.15, Math.PI * 0.85, true); 
-  ctx2.lineTo(centerX, pinY + 15); 
+  ctx2.arc(centerX, pinY - 25, 22, Math.PI * 0.18, Math.PI * 0.82, true); 
+  ctx2.lineTo(centerX, pinY + 12); 
   ctx2.closePath();
-  ctx2.fill();
-  ctx2.stroke();
   
+  // Apply the solid dark UI texture
+  ctx2.fillStyle = pinGradient;
+  ctx2.fill();
+  
+  // Apply the glowing blue border
+  ctx2.strokeStyle = PIN_BORDER; 
+  ctx2.lineWidth = PIN_BORDER_WIDTH; 
+  ctx2.stroke();
+
+  // 4. Draw Crisp Inner Dot
+  ctx2.shadowBlur = 0; 
+  ctx2.shadowOffsetY = 0;
   ctx2.beginPath();
-  ctx2.arc(centerX, pinY - 25, 5, 0, Math.PI * 2);
-  ctx2.fillStyle = ACCENT_COLOR;
+  ctx2.arc(centerX, pinY - 25, 6, 0, Math.PI * 2);
+  ctx2.fillStyle = DOT_COLOR;
   ctx2.fill();
 
   const tex = new THREE.CanvasTexture(canvas);
@@ -1367,7 +1393,7 @@ function createSearchMarker(text, x, bottomY, topY, z) {
   sprite.userData.isSearchMarker = true; 
   searchPinGroup.add(sprite);
 }
-
+  
 function createPUBGLabel(text, x, z, yOffset) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -1625,7 +1651,7 @@ function updateBuildingVisibility() {
 
     if (height > 0.05 && !isGroundPlane) {
       if (is2D) {
-        mesh.visible = activeHighlightMeshes.includes(mesh);
+        mesh.visible = false;
       } else {
         mesh.visible = true;
       }
