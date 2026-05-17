@@ -872,7 +872,7 @@ function renderFacultyDepartments(allCabinIds) {
   suggBox.classList.add('active');
 }
 
-// 3. --- THE MAIN CATEGORY RENDERER ---
+// 3. --- THE MAIN CATEGORY RENDERER (CORRECTED) ---
 function renderCategories() {
   suggBox.innerHTML = '';
 
@@ -892,6 +892,7 @@ function renderCategories() {
     }
   ];
 
+  // FEATURED ROW: Uses the List View
   featuredCats.forEach(cat => {
     const card = document.createElement('div');
     card.className = 'featured-category-card';
@@ -900,7 +901,6 @@ function renderCategories() {
     card.onclick = (e) => { 
       e.stopPropagation();
       
-      // DYNAMICALLY FETCH ALL MATCHING IDs FROM THE ENTIRE JSON
       let matchedIds = [];
       if (cat.id === 'cat_classrooms') {
         matchedIds = mapData.filter(l => l.cat_lvl_2 === 'Classroom').map(l => l.id);
@@ -913,6 +913,33 @@ function renderCategories() {
     };
     featuredRow.appendChild(card);
   });
+
+  suggBox.appendChild(featuredRow);
+
+  // STANDARD LIST BELOW: Uses the Map View (selectCategory)
+  defaultCategories.forEach(cat => {
+    const div = document.createElement('div');
+    div.className = 'category-item';
+    div.innerHTML = `<div class="category-icon">${cat.icon}</div><span class="category-name">${cat.name}</span>`;
+    
+    div.onclick = (e) => { 
+      e.stopPropagation();
+      const catData = mapData.find(l => l.id === cat.id);
+      if(catData && catData.location_ids) {
+        
+        // --- FIXED: THIS NOW PLOTS ON THE MAP AGAIN ---
+        selectCategory(cat.name, catData.location_ids);
+        
+      } else {
+        console.warn("Category data not found in JSON for:", cat.id);
+      }
+    };
+    
+    suggBox.appendChild(div);
+  });
+  
+  suggBox.classList.add('active');
+}
 
   suggBox.appendChild(featuredRow);
 
