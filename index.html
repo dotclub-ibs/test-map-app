@@ -2179,8 +2179,8 @@ function handleJoyMove(touch) {
     const offset = new THREE.Vector3().copy(camera3D.position).sub(controls3D.target);
     const sph = new THREE.Spherical().setFromVector3(offset);
     
-    sph.theta -= dx * 0.0015; 
-    sph.phi -= dy * 0.0015;   
+    sph.theta -= dx * 0.0007; 
+    sph.phi -= dy * 0.0007;   
     sph.phi = Math.max(0.1, Math.min(Math.PI * 0.45, sph.phi));
     
     camera3D.position.setFromSpherical(sph).add(controls3D.target);
