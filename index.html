@@ -78,7 +78,7 @@
   #suggestions {
     background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border); border-radius: 20px; 
-    margin-top: 8px; max-height: calc(100vh - 120px); overflow-y: auto; display: none;
+    margin-top: 8px; max-height: calc(100vh - 160px); padding-bottom: 8px; overflow-y: auto; display: none;
   }
   #suggestions.active { display: block; }
   
@@ -376,6 +376,58 @@
 
   @keyframes subtitleFadeIn {
     100% { opacity: 1; transform: translateY(0); }
+  }
+
+  /* --- FEATURED CATEGORIES ROW (Top of Dropdown) --- */
+  .featured-categories-row {
+    display: flex;
+    gap: 12px;
+    padding: 16px 20px 8px 20px;
+  }
+  
+  .featured-category-card {
+    flex: 1; 
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  
+  .featured-category-card:active { 
+    background: rgba(255, 255, 255, 0.08); 
+    transform: scale(0.98);
+  }
+
+  .featured-category-card .category-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(66, 133, 244, 0.15); 
+    color: var(--accent-blue);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .featured-category-card .category-icon svg {
+    width: 24px; 
+    height: 24px;
+    fill: currentColor;
+  }
+
+  .featured-category-card .category-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-main);
+    text-align: center;
+    letter-spacing: 0.3px;
   }
 </style>
 </head>
@@ -690,18 +742,191 @@ const iconCollapse = document.getElementById('icon-collapse');
 const joyZone = document.getElementById('joystick-zone');
 const joyKnob = document.getElementById('joystick-knob');
 
+// 1. --- THE SUB-LIST RENDERER (Used by both Classrooms and Faculty) ---
+function renderCategoryLocations(categoryName, locationIds, onBackCallback = null) {
+  searchInput.value = categoryName;
+  btnClear.style.display = 'flex';
+  suggBox.innerHTML = '';
+
+  const backBtn = document.createElement('div');
+  backBtn.className = 'category-item';
+  backBtn.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+  backBtn.style.position = 'sticky';
+  backBtn.style.top = '0';
+  backBtn.style.background = 'var(--glass-bg)';
+  backBtn.style.backdropFilter = 'blur(12px)';
+  backBtn.style.zIndex = '10';
+  backBtn.innerHTML = `
+    <div class="category-icon" style="background: transparent;">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </div>
+    <span class="category-name">Back</span>
+  `;
+  
+  backBtn.onclick = (e) => {
+    e.stopPropagation();
+    if (onBackCallback) {
+        onBackCallback(); 
+    } else {
+        searchInput.value = '';
+        btnClear.style.display = 'none';
+        renderCategories(); 
+    }
+  };
+  suggBox.appendChild(backBtn);
+
+  let locations = locationIds.map(id => mapData.find(l => l.id === id)).filter(Boolean);
+  locations.sort((a, b) => a.display_name.localeCompare(b.display_name));
+
+  if (locations.length === 0) {
+     const emptyMsg = document.createElement('div');
+     emptyMsg.className = 'result-item';
+     emptyMsg.innerHTML = `<span class="result-name" style="color: var(--text-muted);">No locations found</span>`;
+     suggBox.appendChild(emptyMsg);
+  } else {
+    locations.forEach(loc => {
+      const div = document.createElement('div');
+      div.className = 'result-item';
+      let metaStr = loc.cat_lvl_1 || '';
+      if(metaStr && loc.cat_lvl_2) metaStr += ` | ${loc.cat_lvl_2}`;
+      div.innerHTML = `<span class="result-name">${loc.display_name}</span><span class="result-meta">${metaStr}</span>`;
+      
+      div.onclick = () => selectLocation(loc);
+      suggBox.appendChild(div);
+    });
+  }
+
+  suggBox.classList.add('active');
+}
+
+// 2. --- THE DEPARTMENT MENU (Reads your JSON Keywords automatically) ---
+function renderFacultyDepartments(allCabinIds) {
+  searchInput.value = "Faculty Departments";
+  btnClear.style.display = 'flex';
+  suggBox.innerHTML = '';
+
+  const backBtn = document.createElement('div');
+  backBtn.className = 'category-item';
+  backBtn.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+  backBtn.style.position = 'sticky';
+  backBtn.style.top = '0';
+  backBtn.style.background = 'var(--glass-bg)';
+  backBtn.style.backdropFilter = 'blur(12px)';
+  backBtn.style.zIndex = '10';
+  backBtn.innerHTML = `
+    <div class="category-icon" style="background: transparent;">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </div>
+    <span class="category-name">Back to Categories</span>
+  `;
+  backBtn.onclick = (e) => {
+    e.stopPropagation();
+    searchInput.value = '';
+    btnClear.style.display = 'none';
+    renderCategories();
+  };
+  suggBox.appendChild(backBtn);
+
+  // Matches exactly with the keywords in your JSON
+  const departments = [
+    { name: 'Finance', keywords: ['finance'] },
+    { name: 'Marketing', keywords: ['marketing'] },
+    { name: 'IT & Operations', keywords: ['it', 'operations'] },
+    { name: 'HR & Communication Skills', keywords: ['hr', 'softskills', 'communication'] },
+    { name: 'Economics', keywords: ['economics'] }
+  ];
+
+  departments.forEach(dept => {
+    const div = document.createElement('div');
+    div.className = 'category-item';
+    div.innerHTML = `
+      <div class="category-icon" style="background: rgba(255,255,255,0.05);">
+        <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+      </div>
+      <span class="category-name">${dept.name}</span>
+    `;
+    
+    div.onclick = (e) => {
+      e.stopPropagation();
+      
+      // Dynamically filter cabins by searching your JSON keywords
+      const filteredIds = allCabinIds.filter(id => {
+        const loc = mapData.find(l => l.id === id);
+        if(!loc) return false;
+        const searchableText = [
+           loc.cat_lvl_1, loc.cat_lvl_2, loc.cat_lvl_3, 
+           loc.description, loc.keywords, loc.display_name
+        ].filter(Boolean).join(' ').toLowerCase();
+        
+        return dept.keywords.some(kw => searchableText.includes(kw));
+      });
+      
+      renderCategoryLocations(dept.name, filteredIds, () => {
+         renderFacultyDepartments(allCabinIds);
+      });
+    };
+    
+    suggBox.appendChild(div);
+  });
+
+  suggBox.classList.add('active');
+}
+
+// 3. --- THE MAIN CATEGORY RENDERER ---
 function renderCategories() {
   suggBox.innerHTML = '';
+
+  const featuredRow = document.createElement('div');
+  featuredRow.className = 'featured-categories-row';
+
+  const featuredCats = [
+    {
+      id: 'cat_classrooms',
+      name: 'Classrooms',
+      icon: '<svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/></svg>'
+    },
+    {
+      id: 'cat_faculty_cabins',
+      name: 'Faculty Cabins',
+      icon: '<svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>'
+    }
+  ];
+
+  featuredCats.forEach(cat => {
+    const card = document.createElement('div');
+    card.className = 'featured-category-card';
+    card.innerHTML = `<div class="category-icon">${cat.icon}</div><span class="category-name">${cat.name}</span>`;
+    
+    card.onclick = (e) => { 
+      e.stopPropagation();
+      
+      // DYNAMICALLY FETCH ALL MATCHING IDs FROM THE ENTIRE JSON
+      let matchedIds = [];
+      if (cat.id === 'cat_classrooms') {
+        matchedIds = mapData.filter(l => l.cat_lvl_2 === 'Classroom').map(l => l.id);
+        renderCategoryLocations(cat.name, matchedIds);
+      } 
+      else if (cat.id === 'cat_faculty_cabins') {
+        matchedIds = mapData.filter(l => l.cat_lvl_2 === 'Faculty cabin').map(l => l.id);
+        renderFacultyDepartments(matchedIds); 
+      }
+    };
+    featuredRow.appendChild(card);
+  });
+
+  suggBox.appendChild(featuredRow);
+
+  // Standard List Below
   defaultCategories.forEach(cat => {
     const div = document.createElement('div');
     div.className = 'category-item';
     div.innerHTML = `<div class="category-icon">${cat.icon}</div><span class="category-name">${cat.name}</span>`;
     
-    // Updated Click Event
-    div.onclick = () => { 
+    div.onclick = (e) => { 
+      e.stopPropagation();
       const catData = mapData.find(l => l.id === cat.id);
       if(catData && catData.location_ids) {
-        selectCategory(cat.name, catData.location_ids);
+        renderCategoryLocations(cat.name, catData.location_ids);
       } else {
         console.warn("Category data not found in JSON for:", cat.id);
       }
@@ -709,6 +934,7 @@ function renderCategories() {
     
     suggBox.appendChild(div);
   });
+  
   suggBox.classList.add('active');
 }
 
