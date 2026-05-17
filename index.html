@@ -940,27 +940,6 @@ function renderCategories() {
   
   suggBox.classList.add('active');
 }
-  // Standard List Below
-  defaultCategories.forEach(cat => {
-    const div = document.createElement('div');
-    div.className = 'category-item';
-    div.innerHTML = `<div class="category-icon">${cat.icon}</div><span class="category-name">${cat.name}</span>`;
-    
-    div.onclick = (e) => { 
-      e.stopPropagation();
-      const catData = mapData.find(l => l.id === cat.id);
-      if(catData && catData.location_ids) {
-        renderCategoryLocations(cat.name, catData.location_ids);
-      } else {
-        console.warn("Category data not found in JSON for:", cat.id);
-      }
-    };
-    
-    suggBox.appendChild(div);
-  });
-  
-  suggBox.classList.add('active');
-}
 
 function renderSuggestions() {
   suggBox.innerHTML = '';
